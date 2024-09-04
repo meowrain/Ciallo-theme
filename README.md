@@ -10,7 +10,7 @@
 
 ```bash
 cd your-blog-directory
-git clone https://github.com/meowrain/Ciallo-theme.git ./data/themes
+git clone https://github.com/meowrain/Ciallo-theme.git data/themes/Ciallo-theme
 ```
 
 然后启动你的博客，在后台选中主题`Ciallo-theme`保存即可
