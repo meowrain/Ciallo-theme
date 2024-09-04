@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html
+    class="{{ if .Config.ContainerWidth }}container-{{ .Config.ContainerWidth }}{{ end }} text-{{ .Config.FontSize }} font-{{ .Config.FontFamily }} {{ if .Config.ColorScheme }}is-{{ .Config.ColorScheme }}{{ end }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .Post.Title }} - {{ .Config.Name }}</title>
+    {{ if .IsUnlocked }}
+    <meta name="description" content="{{ .Post.Excerpt }}">
+    <meta property="og:description" content="{{ .Post.Excerpt }}" />
+    {{ end }}
+    <!-- og -->
+    <meta property="og:title" content="{{ .Post.Title }}" />
+    <meta property="og:site_name" content="{{ .Config.Name }}" />
+    <meta property="og:url" content="{{ .URL.Absolute }}" />
+    {{ if .Post.Cover }}
+    <meta property="og:image" content="{{ .URL.Root }}/{{ .Post.Cover }}" />
+    {{ end }}
+    <meta property="og:type" content="article" />
+    <meta property="article:published_time" content="{{ .Post.PublishedDate }}" />
+    <meta property="article:author" content="{{ .Post.Author.Nickname }}" />
+    {{ range .Post.Tags }}
+    <meta property="article:tag" content="{{ .Name }}" />
+    {{ end }}
+    <!-- / og -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="{{ .URL.RelativeRoot }}assets/style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
+    {{ if .Config.HighlightJS }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="{{ .URL.RelativeRoot }}assets/highlight.css" />
+    {{ end }}
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <link rel="icon" type="image/png" href="{{ .URL.RelativeRoot }}assets/favicon.png">
+    {{ .Config.InjectedHead | html }}
+</head>
+
+<body id="page">
+    <!-- ContentContainer -->
+    <div class="columns is-mobile">
+        <!-- Main Content -->
+        <div class="column is-mobile" id="page-content">
+            <!-- Header -->
+            <div class="columns is-vcentered">
+                <div class="column">
+                    <h1 class="title"><a href="/">{{ .Config.Name }}</a></h1>
+                </div>
+                <div class="column has-text-right">
+                    <button class="button is-outlined"
+                        onclick="document.getElementById('singular-drawer').classList.add('is-active')">
+                        {{ __ "button_menu" }}
+                    </button>
+                </div>
+            </div>
+            <!-- / Header -->
+
+            <!-- Cover -->
+            <div class="column">
+                {{ if .Post.Cover }}
+                <figure class="image is-16by9">
+                    <img src="{{ .Post.Cover }}" alt="{{ .Post.Title }}">
+                </figure>
+                {{ end }}
+            </div>
+            <!-- / Cover -->
+
+            <!-- Title -->
+            <h2 class="title is-3">
+                {{ if eq .Post.Visibility "private" }}{{ __ "title_private" }}{{ end }}
+                {{ if eq .Post.Visibility "draft" }}{{ __ "title_draft" }}{{ end }}
+                {{ if eq .Post.Visibility "password" }}{{ __ "title_password" }}{{ end }}
+                {{ .Post.Title }}
+                {{ if not .Post.IsPublished }}<span class="tag is-warning">{{ __ "title_scheduled" }}</span>{{ end }}
+            </h2>
+            <!-- / Title -->
+            <!-- Date -->
+            <div class="is-size-7 has-text-grey-light my-4">
+                <span>{{ .Post.PublishedAt | unix2date -}}</span>
+                {{ if .Post.PinnedAt }}
+                <span class="tag is-primary">{{ __ "status_pinned" }}</span>
+                {{ end }}
+                {{ if .Self }}
+                <a href="{{ .URL.RelativeRoot }}admin/post/{{ .Post.ID }}" class="button is-small is-light ml-3">
+                    {{ __ "button_editpost" }} <span class="icon"><i class="fas fa-pen"></i></span>
+                </a>
+                {{ end }}
+            </div>
+            <!-- / Date -->
+
+            <hr>
+
+            <!-- Content -->
+            {{ if .IsUnlocked }}
+            {{ .Config.InjectedPostStart }}
+            {{ if eq .Config.AuthorBlock "start" }}
+            {{ template "author.html" . }}
+            {{ end }}
+            <div id="singular-content" class="content mt-6">
+                {{- markdown .Post.Content -}}
+            </div>
+            {{end}}
+            <!-- / Content -->
+        </div>
+
+        <!-- navigation -->
+        <div class="column is-3 is-hidden-touch" id="sidebar">
+            <aside class="menu">
+                <p class="menu-label">{{ __ "Table of Contents" }}</p>
+                <ul class="menu-list" id="table-of-contents">
+                </ul>
+            </aside>
+        </div>
+    </div>
+    <!-- / ContentContainer -->
+
+    <!-- Drawer -->
+    <div id="singular-drawer" class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-content">
+            <div class="box">
+                <div class="columns is-vcentered">
+                    <div class="column">
+                        <h1 class="title">{{ __ "button_menu" }}</h1>
+                    </div>
+                    <div class="column has-text-right">
+                        <button class="button is-outlined"
+                            onclick="document.getElementById('singular-drawer').classList.remove('is-active')">
+                            {{ __ "button_close" }}
+                        </button>
+                    </div>
+                </div>
+                {{ if .Navigations }}
+                <div class="menu">
+                    <ul class="menu-list">
+                        {{ range .Navigations }}
+                        <li><a href="{{ .URL }}">{{ .Name }}</a></li>
+                        {{ end }}
+                    </ul>
+                </div>
+                {{ end }}
+            </div>
+        </div>
+        <button class="modal-close is-large" aria-label="close"
+            onclick="document.getElementById('singular-drawer').classList.remove('is-active')"></button>
+    </div>
+    <!-- / Drawer -->
+
+    <!-- Footer -->
+    {{ if .Config.FooterText }}
+    <footer class="footer">
+        <div class="content has-text-centered">
+            {{ .Config.FooterText | html }}
+        </div>
+    </footer>
+    {{ end }}
+    <!-- / Footer -->
+
+    {{ if .Config.HighlightJS }}
+    <script>
+        hljs.highlightAll();
+    </script>
+    {{ end }}
+    {{ .Config.InjectedFoot | html }}
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const content = document.getElementById('singular-content');
+            const headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
+
+            if (headings.length > 0) {
+                const toc = document.getElementById('table-of-contents');
+
+                headings.forEach((heading, index) => {
+                    const id = 'heading-' + index;
+                    heading.setAttribute('id', id);
+
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.textContent = heading.textContent;
+                    a.href = '#' + id;
+
+                    li.appendChild(a);
+                    toc.appendChild(li);
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

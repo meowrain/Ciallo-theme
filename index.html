@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html
+    class="{{ if .Config.ContainerWidth }}container-{{ .Config.ContainerWidth }}{{ end }} has-text-{{ .Config.FontSize }} has-font-{{ .Config.FontFamily }} {{ if .Config.ColorScheme }}is-{{ .Config.ColorScheme }}{{ end }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .Config.Name }}</title>
+    <meta name="description" content="{{ .Config.Description }}">
+    <!-- og -->
+    <meta property="og:site_name" content="{{ .Config.Name }}" />
+    <meta property="og:url" content="{{ .URL.Absolute }}" />
+    <meta property="og:description" content="{{ .Config.Description }}" />
+    <!-- / og -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ .URL.RelativeRoot }}assets/style.css" />
+    <link rel="icon" type="image/png" href="{{ .URL.RelativeRoot }}assets/favicon.png">
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"> -->
+    <link rel="stylesheet" href="https://s4.zstatic.net/ajax/libs/bulma/1.0.2/css/bulma.min.css">
+    {{ .Config.InjectedHead | html }}
+</head>
+
+<body id="page">
+    <!-- content -->
+    <div class="section">
+        <!-- navigations -->
+        {{ if .Navigations }}
+        <nav class="navbar" role="navigation" aria-label="main navigation">
+            <div class="container">
+                <div class="navbar-brand">
+                    <a class="navbar-item title is-4" href="{{ .URL.RelativeRoot }}">
+                        {{ .Config.Name }}
+                    </a>
+                </div>
+                <div class="navbar-menu">
+                    <div class="navbar-start">
+                        {{ range .Navigations }}
+                        <a href="{{ .URL }}" class="navbar-item">{{ .Name }}</a>
+                        {{ end }}
+                    </div>
+                    <div class="navbar-end">
+                        <div class="navbar-item">
+                            <div class="buttons">
+                                <a class="button is-info" href="/admin">
+                                    {{ __ "button_backend" }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <hr>
+        {{ end }}
+
+        <!-- / navigations -->
+
+        <!-- slate -->
+        <div class="section">
+            <div class="container has-text-centered">
+                <h1 class="title is-1 mb-3">{{ .Config.Name }}</h1>
+                <p class="subtitle is-4">{{ .Config.Description }}</p>
+            </div>
+        </div>
+        <!-- / slate -->
+
+        <hr>
+
+        <!-- filter -->
+        {{ if not .Filter.IsEmpty }}
+        <div id="index-filter" class="section">
+            <div class="container">
+                <div class="columns is-vcentered">
+                    <div class="column">
+                        <p class="is-bold is-size-6">
+                            {{ if .Filter.Tag }}{{ __ "filter_tag" }}{{ .Filter.Tag }}{{ end }}
+                            {{ if .Filter.Author }}{{ __ "filter_author" }}{{ .Filter.Author }}{{ end }}
+                            {{ if .Filter.Date }}{{ __ "filter_date" }}{{ .Filter.Date }}{{ end }}
+                        </p>
+                    </div>
+                    <div class="column has-text-right">
+                        <a href="{{ .URL.RelativeRoot }}" id="filter-reset" class="button is-outlined">
+                            {{ __ "button_resetfilter" }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr>
+        {{ end }}
+        <!-- / filter -->
+
+        <!-- blankslate -->
+        {{ if not .Posts }}
+        <div class="notification is-info has-text-centered">
+            <span class="icon is-large">
+                <i class="fas fa-otter"></i>
+            </span>
+            <div class="title">{{ __ "notfound_title" }}</div>
+            <div class="subtitle">{{ __ "notfound_description" }}</div>
+        </div>
+        {{ end }}
+        <!-- / blankslate -->
+
+        <!-- articles -->
+        <div id="index-articles" class="section">
+            <div class="container">
+                {{ range .Posts }}
+                <div class="box">
+                    <a href="{{ $.URL.RelativeRoot }}post/{{ .Slug }}" class="title is-4">
+                        {{ if eq .Visibility "private" }}{{ __ "title_private" }}{{ end }}
+                        {{ if eq .Visibility "password" }}{{ __ "title_password" }}{{ end }}
+                        {{ .Title }}
+                    </a>
+                    {{ if .PinnedAt }}
+                    <span class="icon has-text-warning" data-tooltip="{{ __ " status_pinned" }}">
+                        <i class="fas fa-star"></i>
+                    </span>
+                    {{ end }}
+                    <p class="subtitle is-6">
+                        {{ if eq .Visibility "password" }}
+                        {{ __ "password_excerpt" }}
+                        {{ else }}
+                        {{ .Excerpt }}
+                        {{ end }}
+                    </p>
+                    <div class="level is-mobile">
+                        <div class="level-left">
+                            <div class="level-item">
+                                <a href="{{ $.URL.RelativeRoot }}archive/{{ .PublishedYear }}/{{ .PublishedMonth }}"
+                                    class="is-size-7">
+                                    {{ .PublishedAt | unix2date }}
+                                </a>
+                            </div>
+                            <div class="level-item">
+                                <a href="{{ $.URL.RelativeRoot }}author/{{ .Author.ID }}" title="{{ .Author.Nickname }}"
+                                    class="is-size-7">
+                                    {{ .Author.Nickname }}
+                                </a>
+                            </div>
+                        </div>
+                        {{ if .Tags }}
+                        <div class="level-right">
+                            <div class="tags">
+                                {{ range $k, $v := .Tags }}
+                                {{ if gt $k 2 }}{{ break }}{{ end }}
+                                <a class="tag" href="{{ $.URL.RelativeRoot }}tag/{{ .Slug }}" title="{{ .Name }}">#{{
+                                    .Name }}</a>
+                                {{ end }}
+                            </div>
+                        </div>
+                        {{ end }}
+                    </div>
+                </div>
+                {{ end }}
+            </div>
+        </div>
+        <!-- / articles -->
+
+        <!-- pagination -->
+        {{ if .Posts }}
+        <div class="section">
+            <div class="container">
+                <nav class="pagination is-centered" role="navigation" aria-label="pagination">
+                    <a href="?page={{ sub .Pagination.CurrentPage 1 }}"
+                        class="pagination-previous {{if eq .Pagination.CurrentPage 1 }}is-hidden{{ end }}">{{ __
+                        "pagination_new" }}</a>
+                    <a href="?page={{ add .Pagination.CurrentPage 1 }}"
+                        class="pagination-next {{if eq .Pagination.CurrentPage .Pagination.TotalPages }}is-hidden{{ end }}">{{
+                        __ "pagination_old" }}</a>
+                    <ul class="pagination-list">
+                        <li><span class="pagination-info">{{ _f "pagination_info" .Pagination.CurrentPage
+                                .Pagination.TotalPages }}</span></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        {{ end }}
+        <!-- / pagination -->
+    </div>
+    <!-- / content -->
+
+    <!-- footer -->
+    {{ if .Config.FooterText }}
+    <footer class="footer">
+        <div class="content has-text-centered">
+            <p>{{ .Config.FooterText | html }}</p>
+        </div>
+    </footer>
+    {{ end }}
+    <!-- / footer -->
+
+    {{ .Config.InjectedFoot | html }}
+</body>
+
+</html>

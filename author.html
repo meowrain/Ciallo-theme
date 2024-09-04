@@ -1,0 +1,19 @@
+<div id="singular-author" class="container">
+    <div class="columns is-vcentered">
+        <div class="column is-narrow">
+            <a href="{{ .URL.RelativeRoot }}author/{{ .Post.Author.ID }}" class="image is-64x64">
+                <img class="is-rounded" src="{{ .Post.Author.Gravatar }}" alt="{{ .Post.Author.Nickname }}">
+            </a>
+        </div>
+        <div class="column">
+            <a href="{{ .URL.RelativeRoot }}author/{{ .Post.Author.ID }}" id="author-nickname" class="title is-5">
+                {{ .Post.Author.Nickname }}
+            </a>
+            {{ if .Post.Author.Bio }}
+            <div id="author-bio" class="subtitle is-6 has-text-grey">
+                {{ .Post.Author.Bio | html }}
+            </div>
+            {{ end }}
+        </div>
+    </div>
+</div>
